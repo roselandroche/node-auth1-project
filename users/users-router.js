@@ -5,7 +5,7 @@ const usersModel = require("./users-model")
 const router = express.Router()
 
 // middleware to validate user and password
-function restricted() {
+function restricted(req, res, next) {
     const authErr = {
         message: `Invalid credentials!`
     }
@@ -17,11 +17,10 @@ function restricted() {
                 return res.status(401).json(authErr)
             }
 
-            const user = usersModel.findBy({ username }).first()
+            const user = await usersModel.findBy({ username }).first()
             if(!user) {
                 return res.status(401).json(authErr)
             }
-
             const passwordValid = await bcrypt.compare(password, user.password)
             if(!passwordValid) {
                 return res.status(401).json(authErr)
