@@ -1,7 +1,9 @@
 const express = require("express")
 
 const session = require("express-session")
+const KnexSessionStore = require("connect-session-knex")(session)
 
+const dbConfig = require("./data/db-config")
 const usersRouter = require("./users/users-router")
 
 const server = express()
@@ -16,7 +18,11 @@ server.use(session({
         httpOnly: true,
         maxAge: 1000 * 60,
         secure: false,
-    }
+    },
+    store: new KnexSessionStore({
+        knex: dbConfig,
+        createTable: true,
+    }),
 }))
 
 server.use("/api", usersRouter)
