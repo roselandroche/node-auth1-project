@@ -11,19 +11,8 @@ function restricted(req, res, next) {
     }
     return async (req, res, next) => {
         try {
-            const{ username, password } = req.headers
-            
-            if(!username || !password) {
-                return res.status(401).json(authErr)
-            }
-
-            const user = await usersModel.findBy({ username }).first()
-            if(!user) {
-                return res.status(401).json(authErr)
-            }
-            const passwordValid = await bcrypt.compare(password, user.password)
-            if(!passwordValid) {
-                return res.status(401).json(authErr)
+            if(!req.session || !req.session.user) {
+                return res.status(401).json({ authErr })
             }
             next()
         } 
@@ -61,6 +50,7 @@ router.post("/login", async(req, res, next) => {
         const passwordValid = await bcrypt.compare(password, user.password)
 
         if(user && passwordValid) {
+            req.session.user = user;
             res.status(201).json({ message: `Welcome ${user.username}!`})
         } else {
             res.status(401).json({ message: `Invalid credentials!`})
